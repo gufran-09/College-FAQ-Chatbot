@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.apache.pdfbox.Loader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,12 +35,20 @@ public class FileReaderService {
             throw new IllegalArgumentException("File has no name");
         }
 
+        return extractText(fileName, file.getInputStream());
+    }
+
+    public String extractText(String fileName, byte[] contents) throws IOException {
+        return extractText(fileName, new ByteArrayInputStream(contents));
+    }
+
+    private String extractText(String fileName, InputStream inputStream) throws IOException {
         String lower = fileName.toLowerCase();
 
         if (lower.endsWith(".pdf")) {
-            return extractFromPdf(file.getInputStream());
+            return extractFromPdf(inputStream);
         } else if (lower.endsWith(".docx")) {
-            return extractFromDocx(file.getInputStream());
+            return extractFromDocx(inputStream);
         } else {
             throw new IllegalArgumentException(
                     "Unsupported file type: " + fileName +

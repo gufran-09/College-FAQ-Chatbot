@@ -3,6 +3,7 @@ package com.example.demo.repository;
 import com.example.demo.model.DocumentChunk;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
@@ -13,4 +14,7 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, Lo
 
     // Count how many chunks a document produced
     int countByDocumentId(Long documentId);
+
+    @Transactional
+    void deleteByDocumentId(Long documentId);
 }

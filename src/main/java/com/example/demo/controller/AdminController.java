@@ -64,7 +64,13 @@ public class AdminController {
         }
 
         // Start ingestion (saves Document record, then processes async)
-        Document doc = ingestionService.startIngestion(file, uploadedBy);
+        Document doc;
+        try {
+            doc = ingestionService.startIngestion(file, uploadedBy);
+        } catch (Exception exception) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Could not read uploaded file"));
+        }
 
         return ResponseEntity.ok(Map.of(
                 "message", "File uploaded successfully. Processing started.",
@@ -104,5 +110,18 @@ public class AdminController {
                         "uploadedAt",  doc.getUploadedAt().toString()
                 )))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/documents/{id}")
+    public ResponseEntity<?> deleteDocument(@PathVariable Long id) {
+        try {
+            ingestionService.deleteDocument(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception exception) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Could not delete document"));
+        }
     }
 }
