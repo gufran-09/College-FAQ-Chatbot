@@ -68,6 +68,46 @@ button { cursor: pointer; }
 .suggestion-grid button:hover { background: #eef8f5; border-color: #cbe3dd; color: #175a4f; }
 .disclaimer { color: #a1aeab; font-size: 10px; margin: 13px 0 0; text-align: center; }
 .error-banner { background: #fff2ee; border: 1px solid #f3d6cd; border-radius: 8px; color: #a4503d; font-size: 12px; margin: 0 0 9px; padding: 9px 11px; }
+.admin-page { margin: 0 auto; max-width: 1160px; padding: 48px 32px; }
+.admin-heading { align-items: center; display: flex; gap: 14px; margin-bottom: 25px; }
+.section-icon, .card-title > span { align-items: center; background: #e8f5f1; border-radius: 10px; color: #147063; display: flex; height: 42px; justify-content: center; width: 42px; }
+.admin-heading p, .card-title p, .table-heading p { color: #8b9b97; font-size: 12px; margin: 0 0 3px; }
+.admin-heading h1 { color: #174b43; font-family: Georgia, "Times New Roman", serif; font-size: 34px; font-weight: 500; letter-spacing: -.035em; margin: 0; }
+.admin-heading span:last-child { color: #69807a; font-size: 13px; }
+.admin-grid { display: grid; gap: 17px; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); }
+.admin-card { background: rgba(255, 255, 255, .94); border: 1px solid #e0eae7; border-radius: 14px; box-shadow: 0 8px 22px rgba(29, 86, 75, .05); padding: 18px; }
+.card-title, .table-heading, .document-name, .refresh-button { align-items: center; display: flex; }
+.card-title { gap: 10px; margin-bottom: 15px; }
+.card-title > span { border-radius: 8px; height: 34px; width: 34px; }
+.card-title h2, .table-heading h2 { color: #27534c; font-size: 15px; margin: 0; }
+.drop-zone { align-items: center; background: #f7fbfa; border: 1px dashed #c3d9d3; border-radius: 10px; color: #67817a; cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 18px; text-align: center; }
+.drop-zone strong { color: #41655e; font-size: 13px; }
+.drop-zone span { color: #92a29f; font-size: 11px; }
+.drop-zone input { display: none; }
+.field-label { color: #69807a; display: grid; font-size: 11px; font-weight: 700; gap: 5px; letter-spacing: .05em; margin-top: 12px; text-transform: uppercase; }
+.field-label input { border: 1px solid #dce8e4; border-radius: 7px; color: #41655e; outline: none; padding: 9px; }
+.admin-primary { background: #155e52; border: 0; border-radius: 7px; color: white; font-size: 12px; font-weight: 750; margin-top: 12px; padding: 10px 13px; width: 100%; }
+.stats-grid { display: grid; gap: 9px; }
+.stats-grid div { background: #f6faf9; border-radius: 8px; display: flex; justify-content: space-between; padding: 12px; }
+.stats-grid strong { color: #185d52; }
+.stats-grid span { color: #7e918c; font-size: 12px; }
+.admin-alert, .notice-banner { margin: 15px 0 0; }
+.notice-banner { background: #eaf8f1; border: 1px solid #cfebdc; border-radius: 8px; color: #35735b; font-size: 12px; padding: 9px 11px; }
+.document-card { margin-top: 17px; }
+.table-heading { justify-content: space-between; margin-bottom: 14px; }
+.refresh-button { background: white; border: 1px solid #dce8e4; border-radius: 7px; color: #55766f; font-size: 12px; gap: 6px; padding: 8px 10px; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border-top: 1px solid #edf2f0; padding: 12px 8px; text-align: left; }
+th { color: #96a6a2; font-size: 10px; letter-spacing: .09em; text-transform: uppercase; }
+td { color: #607873; font-size: 12px; }
+.document-name { color: #41655e; gap: 7px; font-weight: 650; }
+.status { border-radius: 999px; display: inline-block; font-size: 10px; font-weight: 800; padding: 4px 7px; }
+.status.completed { background: #e5f7ec; color: #277848; }
+.status.processing, .status.pending { background: #fff3dc; color: #98631c; }
+.status.failed { background: #ffe6df; color: #a33f29; }
+.delete-button { background: transparent; border: 0; color: #b66654; display: flex; padding: 4px; }
+.empty-table { color: #91a09d; padding: 28px; text-align: center; }
 .placeholder-page { align-items: center; color: #55706b; display: flex; flex-direction: column; gap: 12px; justify-content: center; min-height: 100vh; padding: 30px; text-align: center; }
 .placeholder-page h1 { color: #174b43; font-size: 32px; margin: 0; }
 .placeholder-page p { margin: 0; }
@@ -83,4 +123,7 @@ button { cursor: pointer; }
   .chat-workspace { padding: 24px 15px 14px; }
   .message-row { max-width: 92%; }
   .welcome-state h1 { font-size: 39px; }
+  .admin-page { padding: 26px 16px; }
+  .admin-grid { grid-template-columns: 1fr; }
+  .admin-heading h1 { font-size: 29px; }
 }
