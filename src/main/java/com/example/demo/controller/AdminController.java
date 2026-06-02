@@ -25,7 +25,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "${app.cors.allowed-origin:http://localhost:3000}")  // Configure per environment
+@CrossOrigin(origins = "${app.cors.allowed-origin:http://localhost:5173}")  // Configure per environment
 public class AdminController {
 
     private final IngestionService ingestionService;

@@ -12,7 +12,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "${app.cors.allowed-origin:http://localhost:3000}")
+@CrossOrigin(origins = "${app.cors.allowed-origin:http://localhost:5173}")
 public class ChatController {
 
     private final ChatService chatService;
