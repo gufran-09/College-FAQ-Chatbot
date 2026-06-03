@@ -14,29 +14,23 @@ import java.util.List;
 @Service
 public class EmbeddingService {
 
-    @Value("${gemini.api.key}")
-    private String apiKey;
+    @Value("${ollama.base.url}")
+    private String ollamaBaseUrl;
 
-    @Value("${gemini.embedding.url}")
-    private String embeddingUrl;
+    @Value("${ollama.embedding.model}")
+    private String embeddingModel;
 
     private final OkHttpClient httpClient = new OkHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public float[] embed(String text) throws IOException {
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("Missing Gemini API key. Set GEMINI_API_KEY.");
-        }
 
-        // Gemini request body format
         ObjectNode requestBody = objectMapper.createObjectNode();
-        ObjectNode content = requestBody.putObject("content");
-        content.putArray("parts").addObject().put("text", text);
-
-        String url = embeddingUrl + "?key=" + apiKey;
+        requestBody.put("model", embeddingModel);
+        requestBody.put("prompt", text);
 
         Request request = new Request.Builder()
-                .url(url)
+                .url(ollamaBaseUrl + "/api/embeddings")
                 .post(RequestBody.create(
                         objectMapper.writeValueAsString(requestBody),
                         MediaType.parse("application/json")
@@ -44,38 +38,54 @@ public class EmbeddingService {
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
+
+            String body = response.body() != null
+                    ? response.body().string()
+                    : "";
+
             if (!response.isSuccessful()) {
-                String err = response.body() != null ? response.body().string() : "";
-                throw new IOException("Gemini API error: " + response.code() + " — " + err);
+                throw new IOException(
+                        "Ollama embedding error: "
+                                + response.code()
+                                + " - "
+                                + body
+                );
             }
-            return parseResponse(response.body().string());
+
+            JsonNode root = objectMapper.readTree(body);
+
+            JsonNode embeddingNode = root.path("embedding");
+
+            float[] vector = new float[embeddingNode.size()];
+
+            for (int i = 0; i < embeddingNode.size(); i++) {
+                vector[i] = embeddingNode.get(i).floatValue();
+            }
+
+            return vector;
         }
     }
 
-    private float[] parseResponse(String json) throws IOException {
-        JsonNode root = objectMapper.readTree(json);
-        // Gemini returns: {"embedding": {"values": [0.1, 0.2, ...]}}
-        JsonNode values = root.path("embedding").path("values");
-        if (!values.isArray() || values.isEmpty()) {
-            throw new IOException("Unexpected Gemini embedding response: " + json);
-        }
+    public List<float[]> embedAll(List<String> chunks)
+            throws IOException, InterruptedException {
 
-        float[] vector = new float[values.size()];
-        for (int i = 0; i < values.size(); i++) {
-            vector[i] = values.get(i).floatValue();
-        }
-        return vector;
-    }
-
-    public List<float[]> embedAll(List<String> chunks) throws IOException, InterruptedException {
         List<float[]> embeddings = new ArrayList<>();
+
         for (int i = 0; i < chunks.size(); i++) {
-            System.out.printf("  Embedding chunk %d / %d...%n", i + 1, chunks.size());
+
+            System.out.printf(
+                    "Embedding chunk %d / %d%n",
+                    i + 1,
+                    chunks.size()
+            );
+
             embeddings.add(embed(chunks.get(i)));
+
             if (i < chunks.size() - 1) {
-                Thread.sleep(200); // stay within free tier rate limit
+                Thread.sleep(100);
             }
         }
+
         return embeddings;
     }
 }

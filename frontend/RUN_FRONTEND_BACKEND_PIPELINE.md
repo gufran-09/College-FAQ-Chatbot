@@ -4,7 +4,7 @@ This project has three connected parts:
 
 1. **Frontend**: React + Vite app in `frontend/`, runs on `http://localhost:5173`
 2. **Backend**: Spring Boot app in the parent `demo/` folder, runs on `http://localhost:8080`
-3. **Pipeline / Knowledge Base**: PostgreSQL + ChromaDB + Gemini API
+3. **Pipeline / Knowledge Base**: PostgreSQL + ChromaDB + Ollama
 
 The frontend talks to the backend through:
 
@@ -16,9 +16,9 @@ The backend talks to:
 
 - PostgreSQL for chat sessions, uploaded document metadata, chunks, and feedback
 - ChromaDB for vector search
-- Gemini API for embeddings and answers
+- Ollama for embeddings and answers using `gemma3:4b` and `nomic-embed-text`
 
----
+---x
 
 ## Prerequisites
 
@@ -29,7 +29,8 @@ Install these first:
 - npm
 - PostgreSQL
 - Docker Desktop, recommended for ChromaDB
-- A Gemini API key
+- Ollama installed locally
+- The `gemma3:4b` and `nomic-embed-text` models pulled into Ollama
 
 ---
 
@@ -90,15 +91,22 @@ $env:CHROMADB_BASE_URL="http://localhost:8000"
 
 ---
 
-## 3. Set Gemini API key
+## 3. Start Ollama and pull models
 
-The document pipeline and chat answers need Gemini:
+The document pipeline and chat answers use Ollama locally:
 
 ```powershell
-$env:GEMINI_API_KEY="your_gemini_api_key"
+ollama pull gemma3:4b
+ollama pull nomic-embed-text
 ```
 
-Without this key:
+Make sure Ollama is available at:
+
+```text
+http://localhost:11434
+```
+
+Without Ollama or the models:
 
 - File upload may fail during embedding
 - Chat questions may return an error from the backend
@@ -183,12 +191,12 @@ React frontend
   -> Spring Boot REST API
   -> PostgreSQL stores document records, chat messages, feedback
   -> Uploaded PDF/DOCX is read and chunked
-  -> Gemini creates embeddings for chunks
+  -> Ollama creates embeddings for chunks
   -> ChromaDB stores vectors
   -> User asks a question
-  -> Gemini embeds the question
+  -> Ollama embeds the question
   -> ChromaDB returns similar chunks
-  -> Gemini generates the final answer
+  -> Ollama generates the final answer
   -> React displays answer and sources
 ```
 
@@ -256,15 +264,16 @@ Make sure:
 2. Database `college_chatbot` exists
 3. `SPRING_DATASOURCE_PASSWORD` is correct
 
-### Upload or chat fails because Gemini key is missing
+### Upload or chat fails because Ollama is unavailable
 
-Set:
+Make sure Ollama is running and the models are pulled:
 
 ```powershell
-$env:GEMINI_API_KEY="your_gemini_api_key"
+ollama pull gemma3:4b
+ollama pull nomic-embed-text
 ```
 
-Restart the backend after setting it.
+Restart the backend after Ollama is available.
 
 ### Upload indexing fails because ChromaDB is offline
 
@@ -286,15 +295,21 @@ Terminal 1, ChromaDB:
 docker run --rm -p 8000:8000 chromadb/chroma
 ```
 
-Terminal 2, backend from parent `demo` folder:
+Terminal 2, Ollama:
+
+```powershell
+ollama pull gemma3:4b
+ollama pull nomic-embed-text
+```
+
+Terminal 3, backend from parent `demo` folder:
 
 ```powershell
 $env:SPRING_DATASOURCE_PASSWORD="your_postgres_password"
-$env:GEMINI_API_KEY="your_gemini_api_key"
 .\mvnw.cmd spring-boot:run
 ```
 
-Terminal 3, frontend from `frontend` folder:
+Terminal 4, frontend from `frontend` folder:
 
 ```powershell
 copy .env.example .env

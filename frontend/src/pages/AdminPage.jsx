@@ -1,6 +1,7 @@
 import { FilePlus2, FileText, RefreshCw, ShieldCheck, Trash2, UploadCloud } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import api from '../api.js'
+import React from 'react'
 
 export default function AdminPage() {
   const [documents, setDocuments] = useState([])

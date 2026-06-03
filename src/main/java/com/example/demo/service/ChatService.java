@@ -7,6 +7,8 @@ import com.example.demo.repository.ChatSessionRepository;
 import com.example.demo.repository.FeedbackLogRepository;
 import com.example.demo.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -16,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatService {
 
+    private static final Logger log = LoggerFactory.getLogger(ChatService.class);
     private static final List<String> VALID_RATINGS = List.of("THUMBS_UP", "THUMBS_DOWN");
 
     private final ChatSessionRepository chatSessionRepository;
@@ -31,9 +34,19 @@ public class ChatService {
         ensureSession(sessionId);
         saveMessage(sessionId, "USER", question);
 
+        // Fetch only 2 chunks — each chunk is now ~150 words, so the total
+        // context sent to the LLM is ~300 words instead of ~800.
         List<ChromaDbService.SearchResult> context =
-                chromaDbService.searchSimilarChunks(embeddingService.embed(question), 5);
-        String answer = llmService.generateAnswer(buildPrompt(question, context));
+                chromaDbService.searchSimilarChunks(embeddingService.embed(question), 2);
+
+        log.info("Retrieved {} context chunks for question: '{}'",
+                context.size(), question.length() > 60 ? question.substring(0, 60) + "…" : question);
+
+        String prompt = buildPrompt(question, context);
+        log.info("Prompt length: {} chars", prompt.length());
+
+        String answer = llmService.generateAnswer(prompt);
+
         Message assistantMessage = saveMessage(sessionId, "ASSISTANT", answer);
         List<String> sources = context.stream()
                 .map(ChromaDbService.SearchResult::fileName)
@@ -78,24 +91,21 @@ public class ChatService {
     }
 
     private String buildPrompt(String question, List<ChromaDbService.SearchResult> context) {
-        StringBuilder prompt = new StringBuilder("""
-                You are a helpful college FAQ assistant for Vardhaman College of Engineering.
-                Answer the student's question ONLY using the information provided below.
-                If the answer is not in the provided information, say:
-                "I don't have information about that. Please contact the college office."
-                Always cite the source document name.
-
-                COLLEGE DOCUMENTS:
-                """);
-        for (int index = 0; index < context.size(); index++) {
-            ChromaDbService.SearchResult result = context.get(index);
-            prompt.append("\n[Document ").append(index + 1).append(" - ")
-                    .append(result.fileName()).append("]: ")
-                    .append(result.text()).append('\n');
+        StringBuilder prompt = new StringBuilder(
+                "You are a college FAQ assistant for Vardhaman College of Engineering. " +
+                "Answer using ONLY the documents below. Be concise. " +
+                "If the answer is not in the documents, say: " +
+                "\"I don't have that information. Please contact the college office.\"\n\n" +
+                "DOCUMENTS:\n"
+        );
+        for (int i = 0; i < context.size(); i++) {
+            ChromaDbService.SearchResult result = context.get(i);
+            prompt.append("[").append(i + 1).append("] ")
+                  .append(result.fileName()).append(": ")
+                  .append(result.text()).append("\n\n");
         }
-        return prompt.append("\nSTUDENT QUESTION: ").append(question)
-                .append("\n\nProvide a clear, helpful answer with the source document name.")
-                .toString();
+        prompt.append("QUESTION: ").append(question).append("\n\nANSWER:");
+        return prompt.toString();
     }
 
     private void validateRequired(String value, String name) {

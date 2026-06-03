@@ -12,6 +12,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import api from '../api.js'
+import React from 'react'
 
 const SESSION_KEY = 'vce-assist-session-id'
 const suggestions = [
@@ -52,19 +53,31 @@ export default function ChatPage() {
     const prompt = (suggestedQuestion || question).trim()
     if (!prompt || loading) return
 
-    setMessages((current) => [...current, { role: 'USER', content: prompt }])
+    const pendingId = `pending-${Date.now()}-${Math.random().toString(16).slice(2)}`
+
+    setMessages((current) => [
+      ...current,
+      { id: `user-${pendingId}`, role: 'USER', content: prompt },
+      { id: pendingId, role: 'ASSISTANT', content: 'Thinking...' },
+    ])
     setQuestion('')
     setError('')
     setLoading(true)
+
     try {
       const { data } = await api.post('/chat', { sessionId, question: prompt })
-      setMessages((current) => [...current, {
-        id: data.messageId,
-        role: 'ASSISTANT',
-        content: data.answer,
-        sources: data.sources,
-      }])
+      setMessages((current) => current.map((message) => (
+        message.id === pendingId
+          ? {
+              id: data.messageId,
+              role: 'ASSISTANT',
+              content: data.answer,
+              sources: data.sources,
+            }
+          : message
+      )))
     } catch (requestError) {
+      setMessages((current) => current.filter((message) => message.id !== pendingId))
       setError(requestError.response?.data?.error || 'Could not generate an answer. Please try again.')
     } finally {
       setLoading(false)
@@ -106,8 +119,8 @@ export default function ChatPage() {
               <article className={`message-row ${message.role.toLowerCase()}`} key={`${message.id || index}-${message.role}`}>
                 <span className="message-avatar">{message.role === 'USER' ? 'ST' : <Sparkles size={16} />}</span>
                 <div>
-                  <div className="message-bubble">{message.content}</div>
-                  {message.role === 'ASSISTANT' && (
+                  <div className={`message-bubble ${String(message.id).startsWith('pending-') ? 'typing' : ''}`}>{message.content}</div>
+                  {message.role === 'ASSISTANT' && message.id && !String(message.id).startsWith('pending-') && (
                     <div className="message-details">
                       {message.sources?.length > 0 && <p>Sources: {message.sources.join(', ')}</p>}
                       <div className="feedback-actions">
@@ -119,12 +132,6 @@ export default function ChatPage() {
                 </div>
               </article>
             ))}
-            {loading && (
-              <article className="message-row assistant">
-                <span className="message-avatar"><Sparkles size={16} /></span>
-                <div className="message-bubble typing">Searching the college knowledge base...</div>
-              </article>
-            )}
             <div ref={messageEnd} />
           </section>
         )}

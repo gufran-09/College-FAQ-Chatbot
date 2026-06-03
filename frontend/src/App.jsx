@@ -18,6 +18,7 @@ import { useState } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import AdminPage from './pages/AdminPage.jsx'
 import ChatPage from './pages/ChatPage.jsx'
+import React from 'react'
 
 const navigation = [
   { to: '/', label: 'College Assistant', icon: MessageCircleMore },

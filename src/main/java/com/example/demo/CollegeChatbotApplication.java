@@ -5,14 +5,20 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
+ * wh
+ * 
  * Entry point for the College FAQ Chatbot backend.
  *
- * @SpringBootApplication  = @Configuration + @EnableAutoConfiguration + @ComponentScan
- *   It scans all classes in this package and sub-packages for @Service,
- *   @Repository, @Controller etc. and wires them together automatically.
+ * @SpringBootApplication = @Configuration + @EnableAutoConfiguration
+ *                        + @ComponentScan
+ *                        It scans all classes in this package and sub-packages
+ *                        for @Service,
+ *                        @Repository, @Controller etc. and wires them together
+ *                        automatically.
  *
- * @EnableAsync  enables the @Async annotation used in IngestionService.
- *   Without this, @Async does nothing and ingestion blocks the HTTP thread.
+ * @EnableAsync enables the @Async annotation used in IngestionService.
+ *              Without this, @Async does nothing and ingestion blocks the HTTP
+ *              thread.
  */
 @SpringBootApplication
 @EnableAsync
